@@ -1,7 +1,16 @@
 export default function StockCard({
   name, price, percentage
 }) {
-  const isNegative = percentage<0;
+  const percentageDisplay = percentage ?? "N/A";
+  const isNegative =
+    typeof percentageDisplay === "string" &&
+    percentageDisplay.includes("-");
+  const percentageClass =
+    percentageDisplay === "N/A"
+      ? "text-zinc-400"
+      : isNegative
+      ? "text-red-400"
+      : "text-green-400";
 
   return (
     <div className="
@@ -17,14 +26,11 @@ export default function StockCard({
       </h2>
 
       <p className="text-xl mt-3">
-        ₹ {price}
+        {price != null ? `₹ ${price}` : "₹ --"}
       </p>
 
-      <p className={`mt-2 ${isNegative
-          ? "text-red-400"
-          : "text-green-400"
-        }`}>
-        {percentage}
+      <p className={`mt-2 ${percentageClass}`}>
+        {percentageDisplay}
       </p>
     </div>
 

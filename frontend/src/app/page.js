@@ -1,26 +1,55 @@
 "use client";
 import Navbar from "../components/navbar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import StockCard from "../components/StockCard";
+import { fetchStocks } from "../services/stockService";
 
-const defaultStocks = [
-  { name: "TCS", price: 3200, percentage: "+1.2%" },
-  { name: "INFY", price: 1900, percentage: "+0.5%" },
-  { name: "RELIANCE", price: 2400, percentage: "-0.3%" },
-  { name: "HDFC", price: 2900, percentage: "+0.8%" },
-  { name: "ICICI", price: 780, percentage: "+1.1%" },
-  { name: "SBIN", price: 640, percentage: "-0.6%" },
-  { name: "AXIS", price: 1000, percentage: "+2.0%" },
-  { name: "LT", price: 2200, percentage: "+0.9%" },
-  { name: "ITC", price: 410, percentage: "-0.2%" },
-  { name: "HCLTECH", price: 1500, percentage: "+1.4%" },
+const defaultSymbols = [
+  "MSFT",
+  "AAPL",
+  "AMZN",
+  "TIGO",
+  "KPGLF",
+  "TSLA",
+  "DELL",
+  "VZ",
+  "MCD",
+  "NVDA",
 ];
 
 export default function Home() {
+  const [stocks, setStocks] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [error, setError] = useState("");
 
-  const filteredStocks = defaultStocks.filter((stock) =>
+  useEffect(() => {
+    async function loadStocks() {
+      try {
+        const results = await Promise.all(
+          defaultSymbols.map(async (symbol) => {
+            const data = await fetchStocks(symbol);
+            return data[0] || {
+              name: symbol,
+              price: null,
+              percentage: "N/A",
+            };
+          })
+        );
+
+        setStocks(results);
+      } catch (fetchError) {
+        setError("Unable to fetch stock prices. Please check your API key and network.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadStocks();
+  }, []);
+
+  const filteredStocks = stocks.filter((stock) =>
     stock.name.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -60,7 +89,7 @@ export default function Home() {
 
       {showNotFound ? (
         <p className="text-red-400 text-xl">
-          No stock found. Try one of the default 10 stocks.
+          No stock found.
         </p>
       ) : (
         <div className="
